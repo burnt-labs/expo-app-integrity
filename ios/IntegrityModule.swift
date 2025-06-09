@@ -48,8 +48,8 @@ public class IntegrityModule: Module {
     }
     
     enum AppAttestSuccessResult {
-        case assertion(data: Data?),
-             attestation(data: Data?),
+        case assertion(data: String?),
+             attestation(data: String?),
              keyIdentifier(string: String?)
     }
     
@@ -97,7 +97,7 @@ public class IntegrityModule: Module {
                 )
             }
             
-            return continuation.resume(returning: .success(result: String(decoding: data, as: UTF8.self)))
+            return continuation.resume(returning: .success(result: data))
             
         case .keyIdentifier(let string):
             guard let string = string else {
@@ -124,7 +124,7 @@ public class IntegrityModule: Module {
                 )
             }
             
-            return continuation.resume(returning: .success(result: String(decoding: data, as: UTF8.self)))
+            return continuation.resume(returning: .success(result: data))
         }
 
     }
@@ -164,7 +164,7 @@ public class IntegrityModule: Module {
             let result = await withCheckedContinuation { continuation in
                 service.attestKey(keyIdentifier, clientDataHash: hash) { result, error in
                     return self.appAttestCompletion(
-                        result: AppAttestSuccessResult.attestation(data: result),
+                        result: AppAttestSuccessResult.attestation(data: result?.base64EncodedString()),
                         error: error,
                         continuation: continuation
                     )
@@ -186,7 +186,7 @@ public class IntegrityModule: Module {
             let result = await withCheckedContinuation { continuation in
                 service.generateAssertion(keyIdentifier, clientDataHash: hash) { result, error in
                     return self.appAttestCompletion(
-                        result: AppAttestSuccessResult.assertion(data: result),
+                        result: AppAttestSuccessResult.assertion(data: result?.base64EncodedString()),
                         error: error,
                         continuation: continuation
                     )
