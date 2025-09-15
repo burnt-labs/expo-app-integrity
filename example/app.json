@@ -11,41 +11,42 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "expo.modules.integrity.example"
+      "bundleIdentifier": "com.burnt.integrityexample",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to location to provide location-based app attestation challenges."
+      },
+      "deploymentTarget": "15.1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "expo.modules.integrity.example"
+      "package": "com.burnt.integrityexample"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "41024734-d880-4119-af45-185056c90dc8"
+        "projectId": "95461c2a-b8c2-4cec-aa47-fe07dde9ef78"
       }
     },
-    "plugins": [
-      "expo-build-properties"
-    ]
+    "plugins": ["expo-build-properties"]
   },
-  "plugins": [
-    [
-      "expo-build-properties",
-      {
-        "ios": {
-          "deploymentTarget": "14.0"
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "14.0"
+          }
         }
-      }
-    ],
-    "expo-secure-store"
-  ]
+      ],
+      "expo-secure-store",
+      "expo-app-integrity"
+    ]
 }
