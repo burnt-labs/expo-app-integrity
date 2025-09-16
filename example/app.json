@@ -37,16 +37,16 @@
     },
     "plugins": ["expo-build-properties"]
   },
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "deploymentTarget": "14.0"
-          }
+  "plugins": [
+    [
+      "expo-build-properties",
+      {
+        "ios": {
+          "deploymentTarget": "14.0"
         }
-      ],
-      "expo-secure-store",
-      "expo-app-integrity"
-    ]
+      }
+    ],
+    "expo-secure-store",
+    "expo-app-integrity"
+  ]
 }
