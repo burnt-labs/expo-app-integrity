@@ -4,5 +4,5 @@
   "apple.extraPods": "[]",
   "apple.ccacheEnabled": "false",
   "apple.privacyManifestAggregationEnabled": "true",
-  "ios.deploymentTarget": "14.0"
+  "ios.deploymentTarget": "15.1"
 }

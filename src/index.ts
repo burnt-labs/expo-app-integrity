@@ -15,9 +15,7 @@ import {
 const generateKey = async (): Promise<string | never> =>
   await IntegrityModule.generateKey()
 
-const iOSAttestKey = async (
-  challenge: string,
-): Promise<{ attestation: string; keyIdentifier: string } | never> => {
+const iOSAttestKey = async (challenge: string): Promise<string | never> => {
   if (!Device.isDevice) throw iOSAppAttestErrors.EXECUTED_IN_SIMULATOR
 
   try {
@@ -41,7 +39,7 @@ const iOSAttestKey = async (
       challenge,
     )
 
-    return { attestation: attestationResult, keyIdentifier }
+    return attestationResult
   } catch (error) {
     const errorCode =
       error.message.split(' ')[error.message.split(' ').length - 1]
@@ -165,7 +163,7 @@ export async function attestKey(
    * 4) and selecting "Project Settings"
    */
   cloudProjectNumber?: number,
-): Promise<{ attestation: string; keyIdentifier: string } | never> {
+): Promise<string | never> {
   switch (Platform.OS) {
     case 'ios':
       return await iOSAttestKey(challenge)

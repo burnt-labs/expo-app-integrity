@@ -2,6 +2,7 @@
   "expo": {
     "name": "integrity-example",
     "slug": "integrity-example",
+    "scheme": "integrity-example",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -42,7 +43,7 @@
       "expo-build-properties",
       {
         "ios": {
-          "deploymentTarget": "14.0"
+          "deploymentTarget": "15.1"
         }
       }
     ],
