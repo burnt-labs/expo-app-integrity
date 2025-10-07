@@ -11,7 +11,7 @@ import {
   LocationObject,
   PermissionStatus,
 } from 'expo-location'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   StyleSheet,
   Text,
@@ -57,6 +57,7 @@ function AppContent() {
   } = useAbstraxionAccount()
 
   const [attestation, setAttestation] = useState<string | null>(null)
+  const [keyIdentifier, setKeyIdentifier] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [location, setLocation] = useState<LocationObject | null>(null)
   const [locationPermission, setLocationPermission] =
@@ -64,12 +65,21 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [addressCopied, setAddressCopied] = useState(false)
+  const [copiedKeyId, setCopiedKeyId] = useState(false)
 
   const handleCopy = async () => {
     if (!attestation) return
     await Clipboard.setStringAsync(attestation)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  const handleCopyKeyIdentifier = async () => {
+    if (keyIdentifier) {
+      await Clipboard.setStringAsync(keyIdentifier)
+      setCopiedKeyId(true)
+      setTimeout(() => setCopiedKeyId(false), 1500)
+    }
   }
 
   const handleCopyAddress = async () => {
@@ -83,6 +93,33 @@ function AppContent() {
     if (address.length <= 20) return address
     return `${address.slice(0, 8)}...${address.slice(-4)}`
   }
+
+  // const decodeAttestation = (base64String: string) => {
+  //   try {
+  //     // Decode Base64 to get the raw bytes
+  //     const rawBytes = atob(base64String)
+
+  //     // Convert to hex for better visualization
+  //     let hexString = ''
+  //     for (let i = 0; i < rawBytes.length; i++) {
+  //       const hex = rawBytes.charCodeAt(i).toString(16).padStart(2, '0')
+  //       hexString += hex + ' '
+  //     }
+
+  //     return {
+  //       base64: base64String,
+  //       hex: hexString.trim(),
+  //       length: rawBytes.length,
+  //       format:
+  //         'CBOR (Concise Binary Object Representation) - Binary format, not human-readable',
+  //     }
+  //   } catch (error) {
+  //     return {
+  //       base64: base64String,
+  //       error: 'Failed to decode Base64',
+  //     }
+  //   }
+  // }
 
   const handleAttestation = async () => {
     setIsLoading(true)
@@ -121,11 +158,12 @@ function AppContent() {
       console.log('serverAttestationChallenge', serverAttestationChallenge)
 
       // Perform app attestation with location-based challenge
-      const attestation = await Integrity.attestKey(
+      const result = await Integrity.attestKey(
         serverAttestationChallenge,
         cloudProjectNumber,
       )
-      setAttestation(attestation)
+      setAttestation(result.attestation)
+      setKeyIdentifier(result.keyIdentifier)
     } catch (error: any) {
       console.log({ error })
       setError(error.code)
@@ -133,6 +171,8 @@ function AppContent() {
       setIsLoading(false)
     }
   }
+
+  // const decodedResult = attestation ? decodeAttestation(attestation) : null
 
   if (isConnecting) {
     return (
@@ -164,7 +204,11 @@ function AppContent() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={styles.title}>Location Based App Attestation</Text>
       <View style={styles.accountContainer}>
         <View style={styles.accountHeader}>
@@ -210,13 +254,13 @@ function AppContent() {
 
       {error ? (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>AppAttest error:</Text>
+          <Text style={styles.errorText}>Attestation error:</Text>
           <Text style={styles.errorValue}>{error}</Text>
         </View>
       ) : (
         <View style={styles.attestationContainer}>
           <View style={styles.attestationHeader}>
-            <Text style={styles.attestationText}>AppAttest attestation</Text>
+            <Text style={styles.attestationText}>Attestation:</Text>
             <TouchableOpacity
               onPress={handleCopy}
               disabled={!attestation}
@@ -235,6 +279,65 @@ function AppContent() {
           </ScrollView>
         </View>
       )}
+      {keyIdentifier && (
+        <View style={styles.attestationContainer}>
+          <View style={styles.attestationHeader}>
+            <Text style={styles.attestationText}>Key Identifier:</Text>
+            <TouchableOpacity
+              onPress={handleCopyKeyIdentifier}
+              disabled={!keyIdentifier}
+              style={[
+                styles.copyButton,
+                !keyIdentifier && styles.copyButtonDisabled,
+              ]}
+            >
+              <Text style={styles.copyButtonText}>
+                {copiedKeyId ? 'Copied!' : 'Copy'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.attestationScroll}>
+            <Text style={styles.attestationValue}>{keyIdentifier}</Text>
+          </ScrollView>
+        </View>
+      )}
+
+      {/* {decodedResult && !decodedResult.error && (
+        <View style={styles.attestationContainer}>
+          <View style={styles.attestationHeader}>
+            <Text style={styles.attestationText}>Decoded Information</Text>
+          </View>
+          <Text style={styles.bodyText}>Format: {decodedResult.format}</Text>
+          <Text style={styles.bodyText}>
+            Length: {decodedResult.length} bytes
+          </Text>
+
+          <View style={[styles.attestationHeader, { marginTop: 12 }]}>
+            <Text style={styles.attestationText}>Hex Representation</Text>
+            <TouchableOpacity
+              onPress={() => handleCopyHex(decodedResult.hex)}
+              disabled={!decodedResult.hex}
+              style={[
+                styles.copyButton,
+                !decodedResult.hex && styles.copyButtonDisabled,
+              ]}
+            >
+              <Text style={styles.copyButtonText}>
+                {copiedHex ? 'Copied!' : 'Copy'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.attestationScroll}>
+            <Text style={styles.attestationValue}>{decodedResult.hex}</Text>
+          </ScrollView>
+        </View>
+      )}
+
+      {decodedResult?.error && (
+        <Text style={styles.errorText}>
+          Decode Error: {decodedResult.error}
+        </Text>
+      )} */}
 
       <TouchableOpacity
         style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -249,7 +352,7 @@ function AppContent() {
       <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   )
 }
 
@@ -262,6 +365,15 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  scrollContent: {
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 40,
+  },
   container: {
     flex: 1,
     backgroundColor: '#000',

@@ -15,7 +15,9 @@ import {
 const generateKey = async (): Promise<string | never> =>
   await IntegrityModule.generateKey()
 
-const iOSAttestKey = async (challenge: string): Promise<string | never> => {
+const iOSAttestKey = async (
+  challenge: string,
+): Promise<{ attestation: string; keyIdentifier: string } | never> => {
   if (!Device.isDevice) throw iOSAppAttestErrors.EXECUTED_IN_SIMULATOR
 
   try {
@@ -39,7 +41,7 @@ const iOSAttestKey = async (challenge: string): Promise<string | never> => {
       challenge,
     )
 
-    return attestationResult
+    return { attestation: attestationResult, keyIdentifier }
   } catch (error) {
     const errorCode =
       error.message.split(' ')[error.message.split(' ').length - 1]
@@ -163,15 +165,23 @@ export async function attestKey(
    * 4) and selecting "Project Settings"
    */
   cloudProjectNumber?: number,
-): Promise<string | never> {
+): Promise<{ attestation: string; keyIdentifier: string } | never> {
   switch (Platform.OS) {
     case 'ios':
       return await iOSAttestKey(challenge)
-    case 'android':
+    case 'android': {
       if (!cloudProjectNumber)
         throw AndroidIntegrityErrors.CLOUD_PROJECT_NUMBER_IS_INVALID
 
-      return await androidRequestIntegrityVerdict(challenge, cloudProjectNumber)
+      const verdict = await androidRequestIntegrityVerdict(
+        challenge,
+        cloudProjectNumber,
+      )
+      return {
+        attestation: verdict,
+        keyIdentifier: 'android-no-key-identifier',
+      }
+    }
     default:
       throw PlatformAgnosticErrors.UNSUPPORTED_PLATFORM
   }
