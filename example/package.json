@@ -9,7 +9,7 @@
     "dev:build": "REACT_NATIVE_PACKAGER_HOSTNAME=192.168.0.24 npx expo start --dev-client --tunnel"
   },
   "dependencies": {
-    "@burnt-labs/abstraxion-react-native": "^1.0.0-alpha.8",
+    "@burnt-labs/abstraxion-react-native": "^1.0.0-alpha.9",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "expo": "~51.0.0",
     "expo-build-properties": "~0.12.5",
